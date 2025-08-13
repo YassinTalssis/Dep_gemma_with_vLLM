@@ -111,4 +111,4 @@ curl.exe http://localhost:8000/v1/completions ^
 
 ---
 
-This way, you can confirm the model is running both **inside the HPC environment** and **from your local machine**.
+This way, we can confirm the model is running both **inside the HPC environment** and **from your local machine**.
