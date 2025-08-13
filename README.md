@@ -15,7 +15,11 @@ cd models
 ### download the model
 huggingface-cli download gaunernst/gemma-3-12b-it-int4-awq --local-dir ./gemma3-12b-awq
 
-### Create a bash script named script.sh
+### Create a Bash Script Named `script.sh`
+
+Save the following content into a file named `script.sh`:
+
+```bash
 #!/bin/bash
 #PBS -N test
 #PBS -l select=1:ncpus=4:mem=180gb:ngpus=1
@@ -36,9 +40,10 @@ cd /home/skiredj.abderrahman/models
 
 # Start vLLM server
 python -m vllm.entrypoints.openai.api_server \
-    --model /home/skiredj.abderrahman/models/gpt-oss-20b \
+    --model /home/skiredj.abderrahman/models/gemma3-12b-awq \
     --tensor-parallel-size 1 \
     --port 8000
+
 
 
 
