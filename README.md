@@ -72,7 +72,9 @@ Create an SSH tunnel to forward port `8000` from the GPU node (`gpu06` in this e
 ```bash
 ssh -L 8000:gpu06:8000 skiredj.abderrahman@172.30.30.11
 ```
-*(Replace `gpu06` with the node assigned to your job.)*
+*(Replace `gpu06` with the node assigned to your job, use this command to see which gpu used by your job:
+qstat -f job_id | grep exec_host
+example: qstat -f 5701.head1 | grep exec_host)*
 
 ---
 
