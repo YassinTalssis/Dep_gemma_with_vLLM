@@ -1,102 +1,115 @@
-🚀 Deploying Gemma 27B (IT INT4 AWQ) with vLLM
-🛠️ Setup Instructions
-1️⃣ Create and Activate a Conda Environment
+# 🚀 Gemma 27B (IT INT4 AWQ) Deployment with vLLM
 
-Note: vLLM supports Python 3.9 – 3.11. Python 3.10 is recommended.
+This repository contains instructions to deploy the **Gemma 27B INT4 AWQ model** on an HPC environment using **vLLM** and access it locally via SSH tunneling.
 
+
+## 1️⃣ Setup Conda Environment
+
+Create and activate the environment:
+
+```bash
 conda create --name gemma27b_vllm python=3.10
 conda activate gemma27b_vllm
 
+```
 
-Install required dependencies:
+---
 
-pip install huggingface_hub vllm
-
-2️⃣ Prepare the Model Directory
-mkdir -p ~/models
-cd ~/models
-
-
+### 2️⃣ Prepare the Model Directory
+```bash
+mkdir models
+cd models
+```
 Download the model:
+```bash
+huggingface-cli download gaunernst/gemma27b-it-int4-awq --local-dir ./gemma27b-it-int4-awq
+```
 
-huggingface-cli download gaunernst/gemma-27b-it-int4-awq --local-dir ./gemma27b-it-int4-awq
+---
 
-3️⃣ Create the PBS Job Script
+### 3️⃣ Create the PBS Job Script
+Save the following as `script.sh`:
 
-Save the following as gemma27b_vllm.sh:
-
+```bash
 #!/bin/bash
-#PBS -N gemma27b_vllm
+#PBS -N gemma_vllm
 #PBS -l select=1:ncpus=4:mem=180gb:ngpus=1
-#PBS -l walltime=24:00:00
 #PBS -q gpu_1d
-#PBS -o logs/output.log
-#PBS -e logs/error.log
+#PBS -o output.log
+#PBS -e error.log
 
-set -euo pipefail
-mkdir -p logs
-
-# ---- Load Anaconda module ----
+# Load Anaconda module
 module use /app/common/modules
 module load anaconda3-2024.10
 
-# ---- Init Conda ----
-eval "$("$(command -v conda)" shell.bash hook)"
-conda activate gemma27b_vllm
+# Init Conda
+source /app/common/anaconda3-2024.10/etc/profile.d/conda.sh
+conda activate gemma_vllm
 
-# ---- Navigate to model directory ----
+# Navigate to model directory
 cd /home/skiredj.abderrahman/models
 
-# ---- Start vLLM server ----
-python -m vllm.entrypoints.openai.api_server \
-  --model /home/skiredj.abderrahman/models/gemma27b-it-int4-awq \
-  --tensor-parallel-size 1 \
-  --host 0.0.0.0 \
-  --port 9998
+# Start vLLM server
+python -m vllm.entrypoints.openai.api_server     --model /home/skiredj.abderrahman/models/gemma27b-it-int4-awq   --tensor-parallel-size 1     --port 8000
+```
 
-4️⃣ Submit the Job
-qsub gemma27b_vllm.sh
+---
 
+### 4️⃣ Submit the Job
+```bash
+qsub script.sh
+```
 
 Check if it’s running:
+```bash
+qstat
+```
 
-qstat -u skiredj.abderrahman
+---
 
-5️⃣ Access the Model from Your Local Machine
+### 5️⃣ Access the Model from Your Local Machine
+Create an SSH tunnel to forward port `8000` from the GPU node (`gpu06` in this example) to your local machine:
+```bash
+ssh -L 8000:gpu06:8000 skiredj.abderrahman@172.30.30.11
+```
+*(Replace `gpu06` with the node assigned to your job.)*
 
-Once the job is running, create an SSH tunnel to forward the server port to your local machine:
+---
 
-ssh -L 9998:<compute_node>:9998 skiredj.abderrahman@172.30.30.11
+## 🔍 Verifying the Deployment
 
+### ✅ Inside the Cluster (direct access to the node)
+Open new CMD(command line)
+Run:
+```bash
+curl http://localhost:8000/v1/models
+```
+Expected output (example):
+```json
+{"object":"list","data":[{"id":"/home/skiredj.abderrahman/models/gemma3-12b-awq","object":"model"}]}
+```
+Test a prompt:
+```bash
+curl http://localhost:8000/v1/completions -H "Content-Type: application/json" -d '{"model":"/home/skiredj.abderrahman/models/gemma3-12b-awq","prompt":"Hello, how are you?","max_tokens":50}'
+```
 
-Replace <compute_node> with the node assigned to your job (check with qstat -f <jobid>).
+---
 
-🔍 Verifying the Deployment
-✅ Inside the HPC Node
-
-List available models:
-
-curl http://localhost:9998/v1/models
-
-
-Expected output:
-
-{"object":"list","data":[{"id":"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq","object":"model"}]}
-
+### 🌐 Outside the Cluster (via SSH tunnel)
+On your local machine (after tunneling):
+```bash
+curl.exe http://localhost:8000/v1/models
+```
+Expected output is the same as inside the cluster.
 
 Test a prompt:
-
-curl http://localhost:9998/v1/completions -H "Content-Type: application/json" -d "{\"model\":\"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq\",\"prompt\":\"Hello, how are you?\",\"max_tokens\":50}"
-
-🌐 From Your Local Machine (via SSH Tunnel)
-
-List models:
-
-curl.exe http://localhost:9998/v1/models
-
-
-Test a prompt:
-
-curl.exe http://localhost:9998/v1/completions ^
+```bash
+curl.exe http://localhost:8000/v1/completions ^
 -H "Content-Type: application/json" ^
--d "{\"model\":\"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq\",\"prompt\":\"He
+-d "{\"model\":\"/home/skiredj.abderrahman/models/gemma3-12b-awq\",\"prompt\":\"Hello, how are you?\",\"max_tokens\":50}"
+```
+*(Use `^` for line breaks on Windows CMD, `\` on macOS/Linux.)*
+
+---
+
+This way, we can confirm the model is running both **inside the HPC environment** and **from your local machine**.
