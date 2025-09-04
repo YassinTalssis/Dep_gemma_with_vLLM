@@ -88,11 +88,11 @@ curl http://localhost:8000/v1/models
 ```
 Expected output (example):
 ```json
-{"object":"list","data":[{"id":"/home/skiredj.abderrahman/models/gemma3-12b-awq","object":"model"}]}
+{"object":"list","data":[{"id":"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq","object":"model"}]}
 ```
 Test a prompt:
 ```bash
-curl http://localhost:8000/v1/completions -H "Content-Type: application/json" -d '{"model":"/home/skiredj.abderrahman/models/gemma3-12b-awq","prompt":"Hello, how are you?","max_tokens":50}'
+curl http://localhost:8000/v1/completions -H "Content-Type: application/json" -d '{"model":"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq","prompt":"Hello, how are you?","max_tokens":50}'
 ```
 
 ---
@@ -108,7 +108,7 @@ Test a prompt:
 ```bash
 curl.exe http://localhost:8000/v1/completions ^
 -H "Content-Type: application/json" ^
--d "{\"model\":\"/home/skiredj.abderrahman/models/gemma3-12b-awq\",\"prompt\":\"Hello, how are you?\",\"max_tokens\":50}"
+-d "{\"model\":\"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq\",\"prompt\":\"Hello, how are you?\",\"max_tokens\":50}"
 ```
 
 
