@@ -110,5 +110,5 @@ curl.exe http://localhost:8000/v1/completions ^
 -H "Content-Type: application/json" ^
 -d "{\"model\":\"/home/skiredj.abderrahman/models/gemma27b-it-int4-awq\",\"prompt\":\"Hello, how are you?\",\"max_tokens\":50}"
 ```
-
+test
 
