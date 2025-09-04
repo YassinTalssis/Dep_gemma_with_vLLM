@@ -108,8 +108,5 @@ curl.exe http://localhost:8000/v1/completions ^
 -H "Content-Type: application/json" ^
 -d "{\"model\":\"/home/skiredj.abderrahman/models/gemma3-12b-awq\",\"prompt\":\"Hello, how are you?\",\"max_tokens\":50}"
 ```
-*(Use `^` for line breaks on Windows CMD, `\` on macOS/Linux.)*
 
----
 
-This way, we can confirm the model is running both **inside the HPC environment** and **from your local machine**.
